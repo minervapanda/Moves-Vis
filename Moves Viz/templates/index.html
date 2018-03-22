@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Moves HeatMap</title>
+    <meta charset="utf-8" />
+    <link 
+        rel="stylesheet" 
+        href="http://cdn.leafletjs.com/leaflet-0.7/leaflet.css"
+    />
+</head>
+<body>
+    <div id="map" style="width: 600px; height: 400px"></div>
+    <div id="activities"></div>
+
+    <script
+       src="http://cdn.leafletjs.com/leaflet-0.7/leaflet.js">
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
+    
+    <script
+       src="http://leaflet.github.io/Leaflet.heat/dist/leaflet-heat.js">
+    </script>
+    <h1>Moves Geo - Visualization</h1>
+
+    <script>
+       {% block content %}
+
+       //here the locations should be location list from python 
+     //var locations = [[-41.5396,174.1242,1.7345],
+//[-38.8725,175.9561,2.6901],
+//[-41.8992,174.3117,4.6968],
+//[-41.7495,174.02,1.8642],
+//[-41.7008,174.0876,2.1629],
+//[-41.7371,174.0682,2.0408],
+//[-41.372,173.3502,2.7565]] >
+
+    console.log({{location|tojson}});
+        var map = L.map('map').setView([-41.5546,174.146], 10);
+        map.fitWorld().zoomIn();
+        map.on('resize', function(e) {
+    map.fitWorld({reset: true}).zoomIn();
+});
+
+        mapLink = 
+            '<a href="http://openstreetmap.org">OpenStreetMap</a>';
+        L.tileLayer(
+            'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; ' + mapLink + ' Contributors',
+            maxZoom: 18,
+        }).addTo(map);
+        //using jinja got the lat-long coordinate array from location
+        var heat = L.heatLayer({{ location|tojson }},{
+        radius: 10,
+        blur: 20, 
+        maxZoom: 1,
+    }).addTo(map);
+            
+        
+{% endblock %}
+    
+    </script>
+</body>
+</html>

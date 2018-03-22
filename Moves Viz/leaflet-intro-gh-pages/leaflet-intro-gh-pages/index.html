@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Leaflet: Make a web map!</title>
+	<style>
+		html, body{ color: #333; font: 20px/24px "Open Sans", sans-serif; margin: 0; background-color: #d1c9b8;}
+		#container{ width: 900px; margin: auto;}
+		.map{ width: 100%; height: 500px;}
+		h1, h2{
+			text-align: center;
+			color: black;
+		}
+		h1{
+			font-size: 60px;
+		}
+		h2{
+			font-size: 36px;
+			margin-top: 40px;
+		}
+		a{
+			background-color: #bef;
+			color: #333;
+			text-decoration: none;
+		}
+		a:hover{
+			text-decoration: underline;
+		}
+		.leaflet-container a{
+			background-color: transparent;
+		}
+		pre{
+			background-color: #eee;
+			padding: 0 15px;
+			overflow: auto;
+		}
+		code{ color: black;}
+
+		code em, code em span, code em .token.operator{
+			font-style: normal;
+			font-weight: bold;
+			background: #d0d0d0;
+		}
+
+	</style>
+	<link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
+	<link rel="stylesheet" href="MarkerCluster.css" />
+  <link rel="stylesheet" href="prism.css">
+	<script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+	<script src="leaflet.markercluster.js"></script>
+	<script src="jquery-2.1.1.min.js"></script>
+  <script src="prism.js"></script>
+</head>
+
+<body>
+<div id="container">
+	<h1>Leaflet: Make a web map!</h1>
+	<p>So. You want to make a web map. Don't worry; it's easy! This is an introduction to web maps using  Leaflet. It was written by Andy Woodruff and Ryan Mullins for <a href="http://maptimeboston.github.io" target="_blank">Maptime Boston</a>, but you don't need to be with us to follow along. So let's go!</p>
+	<h2 id="section1">What is Leaflet?</h2>
+		<p>
+			<a href="http://leafletjs.com" target="_blank">Leaflet</a> is an open-source JavaScript library for interactive web maps. It's lightweight, simple, and flexible, and is probably the most popular open-source mapping library at the moment. Leaflet is developed by <a href="http://agafonkin.com/en/" target="_blank">Vladimir Agafonkin</a> (currently of MapBox) and other contributors.
+		</p>
+		<p><strong>What Leaflet does:</strong> "Slippy" maps with tiled base layers, panning and zooming, and feature layers that you supply. It handles various basic tasks like converting data to map layers and mouse interactions, and it's easy to extend with <a href="http://leafletjs.com/plugins.html" target="_blank">plugins</a>. It will also work well across most types of devices. See <a href="http://maptime.github.io/anatomy-of-a-web-map/" target="_blank">Anatomy of a Web Map</a> for an introduction to the most common kinds of web maps, which is what Leaflet is good for.
+		</p>
+		<p><strong>What Leaflet does not do:</strong> Provide any data for you! Leaflet is a framework for showing and interacting with map data, but it's up to you to provide that data, including a basemap. Leaflet is also not GIS, although it can be combined with tools like <a href="http://cartodb.com" target="_blank">CartoDB</a> for GIS-like capabilities. If you need total freedom of form, interaction, transitions, and map projections, consider working with something like <a href="http://d3js.org" target="_blank">D3</a>.</p>
+		<p><strong>How this tutorial works:</strong> It's structured around examples that progressively build upon one another, starting from scratch and ending with slightly advanced techniques. It assumes a basic knowledge of HTML and JavaScript, or at the very least assumes the will to tinker with the code to better understand what it does—and how to use it for your own work. It won't explain every little object or array, but will contain plenty of links. For complete and thorough documentation, see the <a href="http://leafletjs.com/reference.html" target="_blank">Leaflet site</a>.</p>
+		<p><strong>BEFORE YOU START!</strong>
+			<ol>
+				<li>You'll want a proper text editor. We recommend <a href="http://www.sublimetext.com/" target="_blank">Sublime Text</a>.
+				</li>
+				<li>If you want to follow along on your own computer, your maps will need be on a local web server. Easy ways of doing this include running Python's <a href="http://www.pythonforbeginners.com/modules-in-python/how-to-use-simplehttpserver/" target="_blank">SimpleHTTPServer</a> in your map directory, installing <a href="http://www.mamp.info/en/" target="_blank">MAMP</a> (for Mac), or installing <a href="http://www.wampserver.com/en/" target="_blank">WampServer</a> (for Windows).
+				</li>
+			</ol>
+		</p>
+	<h2 id="section2">This is a simple Leaflet map. A few lines of code.</h2>
+	<div class="map" id="map0"></div>
+	<a class="standalone" href="http://bl.ocks.org/awoodruff/e9739a6719e0604eef58" target="_blank">View this example on its own</a>
+	<h2 id="section2">Let's make a map!</h2>
+
+	<p>The simple map above requires only a few things:
+		<ol>
+			<li>An html page</li>
+			<li>The Leaflet CSS styles</li>
+			<li>The Leaflet JavaScript library</li>
+			<li>A <code>&lt;div&gt;</code> element to hold the map</li>
+			<li>A <code>height</code> style specified for the map div.</li>
+			<li>A short script to create the map in that <code>&lt;div&gt;</code></li>
+		</ol>
+	</p>
+	<pre><code class="language-markup">
+&lt;html&gt;
+&lt;head&gt;
+  &lt;title&gt;A Leaflet map!&lt;/title&gt;
+  &lt;link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css"/&gt;
+  &lt;script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"&gt;&lt;/script&gt;
+  &lt;style&gt;
+    #map{ height: 100% }
+  &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+
+  &lt;div id="map"&gt;&lt;/div&gt;
+
+  &lt;script&gt;
+
+  // initialize the map
+  var map = L.map('map').setView([42.35, -71.08], 13);
+
+  // load a tile layer
+  L.tileLayer('http://tiles.mapc.org/basemap/{z}/{x}/{y}.png',
+    {
+      attribution: 'Tiles by &lt;a href="http://mapc.org"&gt;MAPC&lt;/a&gt;, Data by &lt;a href="http://mass.gov/mgis"&gt;MassGIS&lt;/a&gt;',
+      maxZoom: 17,
+      minZoom: 9
+    }).addTo(map);
+
+  &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+	</code></pre>
+	<p>Want to follow along? Donwload this <a href="https://gist.githubusercontent.com/awoodruff/e9739a6719e0604eef58/raw/a4609a968a393151b67110d96ba7515ed6ce0505/index.html" target="_blank">starter file</a>.</p>
+	<p>Let's focus on the code in that <code>&lt;script&gt;</code> tag near the end. What did we do?
+		<ol>
+			<li>Created a <code>map</code> variable</li>
+			<li>Used <a href="http://leafletjs.com/reference.html#map-l.map" target="_blank"><code>L.map()</code></a> to initialize the map object, passing it the id of the div where we want the map to go</li>
+			<li>Used the <a href="http://leafletjs.com/reference.html#map-setview" target="_blank"><code>setView()</code></a> method to center the initial map view on Boston (latitude 42.35, longitude -71.08, and zoom level 13)</li>
+			<li>Used <a href="http://leafletjs.com/reference.html#tilelayer" target="_blank"><code>L.tileLayer()</code></a> to create a base layer of map tiles (in this case <a href="http://mapc.org">MAPC's</a> basemap), specifying a URL template for the tile images. {z}/{x}/{y} is a template that Leaflet uses to find tiles at the correct zoom, x, and y coordinates. (See <a href="http://maptime.github.io/anatomy-of-a-web-map/#57" target="_blank">Anatomy of a Web Map</a>). We also specified a few options:
+				<ul>
+					<li>Attribution text to appear in the corner. Always property attribute your map data!</li>
+					<li>Maximum and minimum zoom levels. Some tile sets such as this one only cover a certain zoom range. These options prevent the user from zooming beyond that range and seeing a blank map.</li>
+				</ul>
+			</li>
+			<li>Used the <a href="http://leafletjs.com/reference.html#tilelayer-addto" target="_blank"><code>addTo()</code></a> method to add this tile layer to the map we just created</li>
+		</ol>
+	</p>
+	<h2 id="section3">More layers</h2>
+	<div class="map" id="map1"></div>
+	<a class="standalone" href="http://bl.ocks.org/awoodruff/f89989cd2499cf4a900c" target="_blank">View this example on its own</a>
+	<p>Try other base layers, such as <a href="http://maps.stamen.com/" target="_blank">Stamen</a> or <a href="http://wiki.openstreetmap.org/wiki/Tiles" target="_blank">OpenStreetMap</a>. Sometimes maps use multiple tile layers at once. The map above adds MAPC's bike lane layer, which looks like vector data but is actually made up of PNG images with transparency.</p>
+	<p>Just pile on additional layers the same way as the first one. As we'll see later, other types of layers are added in a very similar manner.</p>
+	<pre>
+		<code class="language-javascript">
+// base map
+L.tileLayer('http://tiles.mapc.org/basemap/{z}/{x}/{y}.png',
+{
+  attribution: 'Tiles by &lt;a href="http://mapc.org"&gt;MAPC&lt;/a&gt;,
+    Data by &lt;a href="http://mass.gov/mgis"&gt;MassGIS&lt;/a&gt;',
+  maxZoom: 17,
+  minZoom: 9
+}).addTo(map);
+ OOO 
+// bike lanes
+L.tileLayer('http://tiles.mapc.org/trailmap-onroad/{z}/{x}/{y}.png',
+{
+  maxZoom: 17,
+  minZoom: 9
+}).addTo(map); CCC 
+		</code>
+	</pre>
+	<h2 id="section4">Easy! Now let's map our own data!</h2>
+	<p>Sometimes base tiles are all you need, but usually your web map will show some specific data besides general reference features. Generally these data will be displayed as vector features, in contrast to the raster base map. Vector features come in three varieties:
+		<ul>
+			<li>Points (e.g., the locations of restaurants)</li>
+			<li>Lines (e.g., cycling routes)</li>
+			<li>Polygons (e.g., neighborhood areas)</li>
+		</ul>
+	</p>
+	<p>This is Maptime Boston, so obviously we're going to make a #ratmap for this example. Below is a map of reported "rodent activity" in Boston from the Mayor's Hotline.</p>
+
+	<div id="map2" class="map"></div>
+	<a class="standalone" href="http://bl.ocks.org/awoodruff/1dc36a658a2e24e01b12" target="_blank">View this example on its own</a>
+	<p>Rodents everywhere! The data come from the City of Boston's <a href="https://data.cityofboston.gov/City-Services/Rodent-Activity-open-cases-9-4-13/ynt4-n6g9" target="_blank">open data site</a>. We have converted the original CSV to GeoJSON ahead of time using QGIS. GeoJSON is the de facto standard data type for web maps, and Leaflet has built-in methods to make it easy to map GeoJSON data. For more about GeoJSON, start with <a href="http://en.wikipedia.org/wiki/GeoJSON" target="_blank">its Wikipedia article</a>.</p>
+
+	<pre><code class="language-markup">
+&lt;html&gt;
+&lt;head&gt;
+  &lt;title&gt;A Leaflet map!&lt;/title&gt;
+  &lt;link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css"/&gt;
+  &lt;script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"&gt;&lt;/script&gt;
+   OOO &lt;script src="jquery-2.1.1.min.js"&gt;&lt;/script&gt; CCC 
+  &lt;style&gt;
+    #map{ height: 100% }
+  &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+
+  &lt;div id="map"&gt;&lt;/div&gt;
+
+  &lt;script&gt;
+
+  // initialize the map
+  var map = L.map('map').setView([42.35, -71.08], 13);
+
+  // load a tile layer
+  L.tileLayer('http://tiles.mapc.org/basemap/{z}/{x}/{y}.png',
+    {
+      attribution: 'Tiles by &lt;a href="http://mapc.org"&gt;MAPC&lt;/a&gt;, Data by &lt;a href="http://mass.gov/mgis"&gt;MassGIS&lt;/a&gt;',
+      maxZoom: 17,
+      minZoom: 9
+    }).addTo(map);
+ OOO 
+  // load GeoJSON from an external file
+  $.getJSON("rodents.geojson",function(data){
+    // add GeoJSON layer to the map once the file is loaded
+    L.geoJson(data).addTo(map);
+  });
+ CCC 
+  &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+	</code></pre>
+<p>Okay, so what's new here? We've added a couple of files but only a few more lines of code for the #ratmap.
+	<ol>
+		<li>We have two additional files: <a href="http://code.jquery.com/jquery-2.1.1.min.js" target="_blank">jQuery</a>, a super common and super useful JavaScript library, and our <a href="rodents.geojson" target="blank">rodent GeoJSON</a> file. If you're following along, download both and place them in the same directory as your HTML file.</li>
+		<li>Near the top, we've loaded the jQuery script into the document. jQuery makes it easy to manipulate a web page by finding elements on the page, setting their styles and properties, handling interaction events, and more. Learn more at <a href="http://jquery.com/" target="_blank">jquery.com</a>. Right now we're going to use one of its helper methods to load our external GeoJSON file.</li>
+		<li>After adding the base layer (we don't need the extra layer from the previous example), we use jQuery's <a href="http://api.jquery.com/jquery.getjson/" target="_blank"><code>getJSON()</code></a> method to load the rodent file. We pass this method two things: 1) the path to the rodent file, which in this case is just the file name because it's in the same directory, and 2) a function that will run once the file has been loaded and parsed. The <code>data</code> argument in that function represents the JSON data that jQuery reads from our external file.</li>
+		<li>Inside that function, we use <a href="http://leafletjs.com/reference.html#geojson" target="_blank"><code>L.geoJson()</code></a> to create a vector layer from GeoJSON, passing it the same <code>data</code>, and again using <code>addTo()</code> to put the layer on the map.</li>
+	</ol>
+</p>
+<p>Phew. There were some new pieces to understand here, but the code remains very simple. jQuery is one of several ways to load GeoJSON data. For other options, see <a href="http://lyzidiamond.com/posts/osgeo-august-meeting/" target="_blank">this post</a> and <a href="http://lyzidiamond.com/posts/external-geojson-and-leaflet-the-other-way/" target="_blank">this one</a> from Lyzi Diamond. We're only going to focus on GeoJSON in this tutorial, but check out <a href="https://github.com/mapbox/leaflet-omnivore" target="_blank">Leaflet Omnivore</a> by Tom MacWright for a plugin that makes it easy to load various data types. Need to convert your data to GeoJSON? Try some of these options: <a href="http://www.qgis.org/en/site/" target="_blank">QGIS</a>, <a href="http://ogre.adc4gis.com/" target="_blank">OGRE</a>, <a href="http://shpescape.com/" target="_blank">Shape Escape</a>, <a href="http://www.mapshaper.org/" target="_blank">mapshaper</a>, <a href="http://geojson.io" target="_blank">geojson.io</a>.</p>
+
+<h2 id="section5">Add some style</h2>
+
+<p>Our rodents showed up as default blue markers in the map above. But, although the markers aren't ugly, defaults are <a href="http://uxblog.idvsolutions.com/2013/10/20-unrequested-map-tips-part-1.html" target="_blank">rarely a good idea</a>. Besides, this is a #ratmap, so let's see some rats!</p>
+
+<div id="map3" class="map"></div>
+<a class="standalone" href="http://bl.ocks.org/awoodruff/803c310c871b3b5cc199" target="_blank">View this example on its own</a>
+<p>Eek! <a href="http://i.imgur.com/CqPln1t.gif" target="_blank">Everybody tuck your pants into your socks.</a></p>
+
+<pre><code class="language-javascript">
+$.getJSON("rodents.geojson",function(data){
+   OOO var ratIcon = L.icon({
+    iconUrl: 'rat.png',
+    iconSize: [60,50]
+  }); CCC 
+  L.geoJson(data OOO ,{
+    pointToLayer: function(feature,latlng){
+	  return L.marker(latlng,{icon: ratIcon});
+    }
+  } CCC ).addTo(map);
+});
+</code></pre>
+<p>Leaflet is flexible and smart. As we saw in the previous example, it will draw maps just fine by default, but here we've specified some options to override a default. There are two main additions:
+	<ol>
+		<li>We have used <a href="http://leafletjs.com/reference.html#icon" target="_blank"><code>L.icon()</code></a> to define the icon we're going to use for the rodent points. We have given it an object with a couple of options. Many options are available, but we just need two for now.
+			<ul>
+				<li><code>iconUrl</code> is the path to the image file, in this case <a href="rat.png" target="_blank">rat.png</a> (designed by <a href="https://www.iconfinder.com/icons/130276/animal_animals_deratization_disinfestation_experiment_lab_laboratory_mouse_pet_rat_rodent_science_test_icon" target="_blank">Aha-Soft</a>) which sits in the same directory as the HTML page.</li>
+				<li><code>iconSize</code> is a two-number array of the pixel width and height of the icon. Leaflet needs to know the size in order to position the icon properly. This property could be used to scale the images, but here we are just using the actual pixel dimension of the PNG.</li>
+			</ul>
+		</li>
+		<li>In addition to the GeoJSON data, <code>L.geoJson</code> has been passed an options object. We have given it just one option, a <a href="http://leafletjs.com/reference.html#geojson-pointtolayer" target="_blank"><code>pointToLayer</code></a> function. When <code>pointToLayer</code> is defined, Leaflet uses it to determine how to convert a point feature into a map layer. <code>pointToLayer</code> always accepts two arguments: the GeoJSON feature, and a <a href="http://leafletjs.com/reference.html#latlng" target="_blank"><code>LatLng</code></a> object representing its location. (We don't need to figure these out; Leaflet will automatically pass them to the function.) <code>pointToLayer</code> needs to return some kind of Leaflet layer. We'll cover several layer types later, but right now we're using a Marker, which is also what the default blue symbols are. Our function returns <a href="http://leafletjs.com/reference.html#marker" target="_blank"><code>L.marker()</code></a> to create a new Marker, which is passed:
+			<ul>
+				<li>The latlng that was sent to <code>pointToLayer</code> behind the scenes. This is the location of the point feature.</li>
+				<li>An options object with <code>icon</code> defined as the <code>ratIcon</code> object we created in the previous step.</li>
+			</ul>
+		</li>
+	</ol>
+</p>
+<h2 id="section6">Interaction</h2>
+<p>The true power of web maps is in interaction, and not just panning and zooming. Let's make the #ratmap a bit more useful by adding popups showing the address and date of each rodent report. Click on the rat icons below to see that information.</p>
+<div id="map4" class="map"></div>
+<a class="standalone" href="http://bl.ocks.org/awoodruff/2488ee1fdf0cf063904e" target="_blank">View this example on its own</a>
+<pre><code class="language-javascript">
+pointToLayer: function(feature,latlng){
+   OOO var marker = L.marker(latlng,{icon: ratIcon});
+  marker.bindPopup(feature.properties.Location + '&lt;br/&gt;' + feature.properties.OPEN_DT);
+  return marker; CCC 
+}
+</code></pre>
+<p>Piece of cake. Before returning the Marker in pointToLayer, we just need to use the <a href="http://leafletjs.com/reference.html#marker-bindpopup" target="_blank"><code>bindPopup()</code></a> method to enable the popup on click. <code>bindPopup()</code> only needs to be given the content that is to appear in the popup. In this case, we pass it an HTML string: the Location and OPEN_DT properties from the GeoJSON feature, and a line break im between. Leaflet handles the interaction and everything else. Like most Leaflet objects, though, we could customize the popup if we wanted to.</p>
+
+<h2 id="section7">Polygons</h2>
+<p>Great. We've got a functional #ratmap now. Let's open the door to more advanced mapping techniques by moving beyond point data. Here's a map with Boston neighborhood polygons underneath our rodents.</p>
+<div id="map5" class="map"></div>
+<a class="standalone" href="http://bl.ocks.org/awoodruff/728754e48c11a94b522b" target="_blank">View this example on its own</a>
+<p>These polygons were loaded from another GeoJSON file with minimal effort. By default, Leaflet renders polygon and line data as <a href="https://developer.mozilla.org/en-US/docs/Web/SVG" target="_blank">SVG</a> (Scalable Vector Graphics) paths, making interaction and styling easy. We'll get to that in a moment (that blue doesn't look great!), but first the simple code to load this layer.</p>
+
+<pre><code class="language-javascript">
+ OOO $.getJSON("neighborhoods.geojson",function(hoodData){
+  L.geoJson( hoodData ).addTo(map);
+}); CCC 
+
+$.getJSON("rodents.geojson",function(data){
+  var ratIcon = L.icon({
+    iconUrl: 'rat.png',
+    iconSize: [60,50]
+  });
+  L.geoJson(data,{
+    pointToLayer: function(feature,latlng){
+      var marker = L.marker(latlng,{icon: ratIcon});
+      marker.bindPopup(feature.properties.Location + '&lt;br/&gt;' + feature.properties.OPEN_DT);
+      return marker;
+    }
+  }).addTo(map);
+});
+</code></pre>
+<p>Polygon and line GeoJSON data is added in the same basic way as points. (In fact, all three could be loaded from a single GeoJSON file.) We just repeat the step from a few examples back, using <a href="neighborhoods.geojson" target="_blank">neighborhoods.geojson</a> this time.</p>
+<p>Savvy coders at this point may notice that the two asyncrhonous <code>$.getJSON</code> requests are not guaranteed to finish in the order that the layers need to be stacked. That is, we don't want rodents drawing first, underneath the neighborhoods. Don't worry, and remember that Leaflet is clever. If you dig into your web inspector, you will find that the map consists of several <a href="http://leafletjs.com/reference.html#map-panes" target="_blank">panes</a>. SVG paths, such as our neighborhoods, will always be drawn in the <em>overlay</em> pane, which is beneath the <em>maker</em> pane into which things like our rat markers were drawn. Thus it doesn't matter which of our two layers draws first; they will both be drawn in the right place. (If we had multiple polygon or point layers, however, we would need to be more careful.)</p>
+
+<h2 id="section8">Thematic styles</h2>
+<p>Okay. Let's do something about that default blue. Let's make these polygons useful by turning them into a choropleth layer. The neighborhoods GeoJSON file contains numbers for the number of rodent incidents per square mile in each neighborhood, calculated in QGIS. So here's a #ratdensitymap.</p>
+<div id="map6" class="map"></div>
+<a class="standalone" href="http://bl.ocks.org/awoodruff/3ce5d735126a56dfff94" target="_blank">View this example on its own</a>
+<pre><code class="language-javascript">
+$.getJSON("neighborhoods.geojson",function(hoodData){
+  L.geoJson( hoodData OOO , {
+    style: function(feature){
+      var fillColor,
+          density = feature.properties.density;
+      if ( density > 80 ) fillColor = "#006837";
+      else if ( density > 40 ) fillColor = "#31a354";
+      else if ( density > 20 ) fillColor = "#78c679";
+      else if ( density > 10 ) fillColor = "#c2e699";
+      else if ( density > 0 ) fillColor = "#ffffcc";
+      else fillColor = "#f7f7f7";  // no data
+      return { color: "#999", weight: 1, fillColor: fillColor, fillOpacity: .6 };
+    },
+    onEachFeature: function( feature, layer ){
+      layer.bindPopup( "&lt;strong&gt;" + feature.properties.Name + "&lt;/strong&gt;&lt;br/&gt;" + feature.properties.density + " rats per square mile" )
+    }
+  } CCC ).addTo(map);
+});
+</code></pre>
+<p>At this point we begin to see the power of combining built-in Leaflet features with our own code and logic. Leaflet provides convenient methods of styling those polygons, but it's up to us to figure out what styles to use. The code above creates a simple data classification and assigns <a href="http://colorbrewer.org" target="_blank">ColorBrewer</a> colors based on feature values.
+<ol>
+	<li>Following the pattern of several previous steps, we now pass an options object to the neighborhoods GeoJSON layer. The two options we'll provide are the two functions described below.</li>
+	<li>First, a <a href="http://leafletjs.com/reference.html#geojson-style" target="_blank"><code>style</code></a> function. When this is defined, Leaflet uses it to determine what style to apply to each polygon based on the GeoJSON feature data. The function takes one argument, which is that <code>feature</code>. It needs to return an object with any <a href="http://leafletjs.com/reference.html#path" target="_blank">path styles</a> that we want to override defaults. The function here uses a series of <code>if ... else</code> statements to find where the neighborhood's density property falls within a pre-defined classification, and assigns a fill color accordingly. It then returns an object with that fill color and several other styles defined. When Leaflet adds features in this layer to the map, it will run each of them through this style function and apply the results.</li>
+	<li><a href="http://leafletjs.com/reference.html#geojson-oneachfeature" target="_blank"><code>onEachFeature</code></a> is a more general-purpose function that Leaflet will invoke for each feature as it is added to the map. It takes two arguments: the GeoJSON <code>feature</code>, and the actual map <code>layer</code> (the polygon, in this case). Here we use it to bind a popup to each polygon, much like what we did for the rodents layer. However, for the rodents we could do this in the <code>pointToLayer</code> function, which we were already using to make custom markers. <code>pointToLayer</code> only applies to point features and thus is not available to this polygon layer. <code>onEachFeature</code> is used instead for popups (among other things).</li>
+	<li>Combining <code>style</code> with <code>onEachFeature</code> accomplishes something similar to what <code>pointToLayer</code> did for the rodents. <code>style</code> provides some instructions for how to turn the GeoJSON feature into a map layer, and <code>onEachFeature</code> provides some instructions for what to do with that layer.</li>
+</ol>
+</p>
+<h2 id="section9">Plug in and thin out</h2>
+<p>The beauty of Leaflet being open source—and of the particular way it's written—is that it's functionality and features can be extended and customized to your heart's content. There's a whole slew of <a href="http://leafletjs.com/plugins.html" target="_blank">plugins</a> people have written to extend the Leaflet core, most of them very easy to drop right into your project. We'll use a popular one, <a href="https://github.com/Leaflet/Leaflet.markercluster" target="_blank">Leaflet.markercluster</a>. A map cluttered with rat symbols isn't great, and this plugin will help make it more readable and usable. Poke around on the map below.</p>
+<div id="map7" class="map"></div>
+<a class="standalone" href="http://bl.ocks.org/awoodruff/5de3553bb1f1b0c5f90d" target="_blank">View this example on its own</a>
+<pre><code class="language-markup">
+&lt;link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css"/&gt;
+ OOO &lt;link rel="stylesheet" href="MarkerCluster.css"/&gt; CCC 
+&lt;script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"&gt;&lt;/script&gt;
+ OOO &lt;script src="leaflet.markercluster.js"&gt;&lt;/script&gt; CCC 
+&lt;script src="jquery-2.1.1.min.js"&gt;&lt;/script&gt;
+
+...
+
+&lt;script&gt;
+
+...
+
+ OOO var rodents =  CCC L.geoJson(data,{
+  pointToLayer: function(feature,latlng){
+    var marker = L.marker(latlng,{icon: ratIcon});
+    marker.bindPopup(feature.properties.Location + '&lt;br/&gt;' + feature.properties.OPEN_DT);
+    return marker;
+  }
+});
+ OOO var clusters = L.markerClusterGroup();
+clusters.addLayer(rodents);
+map.addLayer(clusters); CCC 
+
+...
+
+&lt;/script&gt;
+</code></pre>
+<p>Look at all that added functionality from just a few lines of code! The plugin takes care of figuring out clusters, displaying them, and breaking them apart as you zoom in. (This is just the simplest implementation; there are <a href="https://github.com/Leaflet/Leaflet.markercluster#all-options" taret="_blank">many options</a> you can explore.)
+	<ol>
+		<li>The first thing we have to do is add the CSS and JavaScript sources for the Marker Cluster library, available from the <a href="https://github.com/Leaflet/Leaflet.markercluster/tree/master/dist" target="_blank">dist</a> folder of the plugin repository.</li>
+		<li>In the code, we assign that GeoJSON layer to a <code>rodents</code> variable instead of immediately adding it to the map. Its options remain the same, but we need to save it to a variable in order to use it later.</li>
+		<li>Next we create a marker cluster layer with <a href="https://github.com/Leaflet/Leaflet.markercluster#usage" target="_blank"><code>L.markerClusterGroup()</code></a>, a function that is part of the plugin, and assign it to a <code>clusters</code> variable.</li>
+		<li>The cluster layer is a group to which we can add individual markers which will then be clustered. Conveniently, we can also just add the entire rodents layer (which is a collection of markers) at once.</li>
+		<li>Finally, we add the cluster layer to the map, and magically our rodetns are organized into smaller rat armies.</li>
+	</ol>
+</p>
+<h2>Go forth</h2>
+<p>We'll leave it there for now. We've already gone from nothing to a somewhat fancy map, but there is much more you can do with Leaflet. Tinker with what we've done here to better understand how everything works and how different options affect the map. Also think about good map design—this tutorial has only been about technology and hasn't addresssed (or demonstrated) good design. Going forward, have a look at some of these other Leaflet and mapping resources:
+	<ul>
+		<li><a href="http://leafletjs.com/examples.html" target="_blank">Tutorials on the main Leaflet site.</a></li>
+		<li><a href="http://leafletjs.com/reference.html" target="_blank">Leaflet API reference</a></li>
+		<li><a href="https://www.mapbox.com/mapbox.js/api/v2.1.0/" target="_blank">Mapbox.js, a library that builds on Leaflet and integrates with Mapbox maps</a></li>
+		<li><a href="https://speakerdeck.com/mourner/future-of-leaflet" target="_blank">The Future of Leaflet</a> (version 1.0 is coming!)</li>
+		<li><a href="http://vimeo.com/106112939" target="_blank">How Simplicity Will Save GIS</a>, a talk by Vladimir Agafonkin at FOSS4G 2014, demonstrating the thinking behind Leaflet</li>
+		<li><a href="https://github.com/RyanMullins/Geog461W.SP2014.Labs" target="_blank">Dynamic Cartography lab assignments</a> from Penn State, covering many techniques and technologies, including Leaflet.</li>
+		<li><a href="https://github.com/mapbox/leaflet-omnivore" target="_blank">leaflet-omnivore</a> is a particularly handy plugin for loading common data formats such as CSV.</li>
+		<li><a href="https://github.com/geografa/foss4g2014-workshops/blob/master/Leaflet-and-Mapbox-JavaScript-API-Fundamentals.md" target="_blank">Leaflet and Mapbox JavaScript API Fundamentals</a> workshop by Rafa Gutierrez</li>
+		<li><a href="http://mapschool.io/" target="_blank">mapschool.io</a>, an on going project explaining map fundamentals</li>
+		<li>Texts such as <a href="http://www.amazon.com/Web-Cartography-Design-Interactive-Devices/dp/1439876223" target="_blank">Web Cartography: Map Design for Interactive and Mobile Devices</a> can be good for understanding good map design principles.</a>
+	</ul>
+</p>
+</div>
+<script>
+
+$(window).load(function(){
+	var h = $("code").each(function(){
+		var h = $(this).html().replace(/ OOO /g, "<em>").replace( / CCC /g, "</em>");
+		$(this).html(h);
+	});
+	
+})
+
+//
+
+var mapDivs = document.getElementsByClassName("map"),
+	maps = [];
+
+for ( var i=0; i<mapDivs.length; i++ ){
+	initializeMap( mapDivs[i].id );
+}
+
+function initializeMap(id){
+	var map = L.map(id, {scrollWheelZoom: false}).setView([42.35, -71.08], 13);
+	L.tileLayer('http://tiles.mapc.org/basemap/{z}/{x}/{y}.png', {
+	    attribution: 'Tiles by <a href="http://mapc.org">MAPC</a>, Data by <a href="http://mass.gov/mgis">MassGIS</a> and City of Boston',
+	    maxZoom: 17,
+	    minZoom: 9
+	}).addTo(map);
+	maps.push(map);
+
+	// specific code for each map
+	switch (id){
+		case "map1":
+		L.tileLayer('http://tiles.mapc.org/trailmap-onroad/{z}/{x}/{y}.png', {
+		    maxZoom: 17,
+		    minZoom: 9
+		}).addTo(map);
+		break;
+
+		case "map2":
+		$.getJSON("rodents.geojson",function(data){
+			L.geoJson(data).addTo(map);
+		})
+		break;
+
+		case "map3":
+		$.getJSON("rodents.geojson",function(data){
+			var ratIcon = L.icon({
+				iconUrl: 'rat.png',
+				iconSize: [60,50]
+			});
+			L.geoJson(data,{
+				pointToLayer: function(feature,latlng){
+					return L.marker(latlng,{icon: ratIcon});
+				}
+			}).addTo(map);
+		})
+		break;
+
+		case "map4":
+		$.getJSON("rodents.geojson",function(data){
+			var ratIcon = L.icon({
+				iconUrl: 'rat.png',
+				iconSize: [60,50]
+			});
+			L.geoJson(data,{
+				pointToLayer: function(feature,latlng){
+					var marker = L.marker(latlng,{icon: ratIcon});
+					marker.bindPopup(feature.properties.Location + '<br/>' + feature.properties.OPEN_DT);
+					return marker;
+				}
+			}).addTo(map);
+		})
+		break;
+
+		case "map5":
+		$.getJSON("neighborhoods.geojson",function(hoodData){
+			L.geoJson( hoodData ).addTo(map);
+		});
+		$.getJSON("rodents.geojson",function(data){
+			var ratIcon = L.icon({
+				iconUrl: 'rat.png',
+				iconSize: [60,50]
+			});
+			L.geoJson(data,{
+				pointToLayer: function(feature,latlng){
+					var marker = L.marker(latlng,{icon: ratIcon});
+					marker.bindPopup(feature.properties.Location + '<br/>' + feature.properties.OPEN_DT);
+					return marker;
+				}
+			}).addTo(map);
+		});
+		break;
+
+		case "map6":
+		$.getJSON("neighborhoods.geojson",function(hoodData){
+			L.geoJson( hoodData, {
+				style: function(feature){
+					var fillColor,
+						density = feature.properties.density;
+					if ( density > 80 ) fillColor = "#006837";
+					else if ( density > 40 ) fillColor = "#31a354";
+					else if ( density > 20 ) fillColor = "#78c679";
+					else if ( density > 10 ) fillColor = "#c2e699";
+					else if ( density > 0 ) fillColor = "#ffffcc";
+					else fillColor = "#f7f7f7";
+					return { color: "#999", weight: 1, fillColor: fillColor, fillOpacity: .6 };
+				},
+				onEachFeature: function( feature, layer ){
+					layer.bindPopup( "<strong>" + feature.properties.Name + "</strong><br/>" + feature.properties.density + " rats per square mile" )
+				}
+			}).addTo(map);
+		});
+		$.getJSON("rodents.geojson",function(data){
+			var ratIcon = L.icon({
+				iconUrl: 'rat.png',
+				iconSize: [60,50]
+			});
+			L.geoJson(data,{
+				pointToLayer: function(feature,latlng){
+					var marker = L.marker(latlng,{icon: ratIcon});
+					marker.bindPopup(feature.properties.Location + '<br/>' + feature.properties.OPEN_DT);
+					return marker;
+				}
+			}).addTo(map);
+		});
+		break;
+
+		case "map7":
+		map.setZoom(12);
+		$.getJSON("neighborhoods.geojson",function(hoodData){
+			L.geoJson( hoodData, {
+				style: function(feature){
+					var fillColor,
+						density = feature.properties.density;
+					if ( density > 80 ) fillColor = "#006837";
+					else if ( density > 40 ) fillColor = "#31a354";
+					else if ( density > 20 ) fillColor = "#78c679";
+					else if ( density > 10 ) fillColor = "#c2e699";
+					else if ( density > 0 ) fillColor = "#ffffcc";
+					else fillColor = "#f7f7f7";
+					return { color: "#999", weight: 1, fillColor: fillColor, fillOpacity: .6 };
+				},
+				onEachFeature: function( feature, layer ){
+					layer.bindPopup( "<strong>" + feature.properties.Name + "</strong><br/>" + feature.properties.density + " rats per square mile" )
+				}
+			}).addTo(map);
+		});
+		$.getJSON("rodents.geojson",function(data){
+			var ratIcon = L.icon({
+				iconUrl: 'rat.png',
+				iconSize: [60,50]
+			});
+			var clusters = L.markerClusterGroup();
+			var rodents = L.geoJson(data,{
+				pointToLayer: function(feature,latlng){
+					var marker = L.marker(latlng,{icon: ratIcon});
+					marker.bindPopup(feature.properties.Location + '<br/>' + feature.properties.OPEN_DT);
+					return marker;
+				}
+			});
+			clusters.addLayer(rodents);
+			map.addLayer(clusters);
+		});
+		break;
+	}
+
+}
+</script>
+
+</body>
+</html>
