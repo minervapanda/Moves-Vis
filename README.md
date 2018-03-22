@@ -1,4 +1,4 @@
 # Moves-Vis
 Moves Data Visualization
-![alt text](https://raw.githubusercontent.com/minervapanda/Moves-Viz/master/Moves_Geo_Viz.png)
+![alt text](https://github.com/minervapanda/Moves-Vis/blob/master/Moves%20Viz/Moves_Geo_Viz.png)
 
